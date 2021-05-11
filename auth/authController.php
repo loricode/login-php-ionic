@@ -18,26 +18,29 @@ class AuthController{
    }
  }
 
-
  public function iniciarSesion($data){
-
-  if(isset($data['email']) && isset($data['password']) ){
+   try{
     $password = $data['password'];
     $conexion = new Conexion();
     $db = $conexion->getConexion();
-    $query = "SELECT * FROM user WHERE email=:email AND password=':password'";
+    $query = "SELECT * FROM user WHERE clave=:clave";
     $statement = $db->prepare($query);
-    $statement->bindParam(":email", $email);
-    $statement->bindParam(":password", $password);
-    $result = $statement->execute();
-    $db = null;
-    if($result){
-       return ["status" => "200", "email" => $email, "ok"=>$result];
+    $statement->bindParam(":clave", $password);
+    $statement->execute();
+    $resultData = $statement->fetch();
+    if($resultData == null){
+      return ["status" => "400", "data"=>  $resultData, "login" => false ];  
     }else{
-       return ["status" => "404", "email" => "error"];   
+       //puede hacer un token en esta parte
+       return ["status" => "200", 
+              "data"=> ["name"=>$resultData["name"],"id" => $resultData["id"]],
+              "login" => true
+         ];
+      } 
+    } catch (PDOException $e) {
+        echo "¡Error!: " . $e->getMessage() . "<br/>";
     }
-  }
-}
+ }
 
 }//fin de la clase
 ?>
